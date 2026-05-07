@@ -38,7 +38,7 @@ public class ApartamentoController {
     public Apartamento debug(@PathVariable Integer id) {
         return apartamentoService.findById(id);
     }
-    @GetMapping("/{id}")
+    @GetMapping("/public/{id}")
     public ApartamentoDetailDTO getDetail(@PathVariable Integer id) {
         return apartamentoService.getDetail(id);
     }
@@ -48,12 +48,12 @@ public class ApartamentoController {
         return apartamentoService.findById(id);
     }
 
-    @GetMapping("/{id}/comentarios")
+    @GetMapping("/public/{id}/comentarios")
     public List<ComentarioDTO> getComentarios(@PathVariable Integer id) {
         return reservaService.findComentariosByApartamento(id);
     }
- // para el propietario tmaibén: @PreAuthorize("hasAnyRole('ADMIN','PROPIETARIO')")
-    @PreAuthorize("hasRole('ADMIN')")
+ 
+    @PreAuthorize("hasRole('EMPLEADO')")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<String> createApartamento(
             @RequestParam("titulo") String titulo,
@@ -88,8 +88,9 @@ public class ApartamentoController {
     }
     
 
-    @PostMapping("/buscar")
+    @PostMapping("/public/buscar")
     public List<ApartamentoDTO> buscar(@RequestBody ApartamentoFiltroDTO filtro) {
+    	System.out.print("Cargando apartamentos");
         return apartamentoService.buscarDisponibles(
             filtro.getFechaInicio(),
             filtro.getFechaFin(),
@@ -97,7 +98,7 @@ public class ApartamentoController {
         );
     }
     
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('EMPLEADO')")
     @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Map<String, String>> updateApartamento(
             @PathVariable Integer id,
@@ -136,7 +137,7 @@ public class ApartamentoController {
         	            ));
         }
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('EMPLEADO')")
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         apartamentoService.delete(id);

@@ -383,6 +383,11 @@ public class ApartamentoServiceImpl implements IApartamentoService {
          a.setFotos(String.join(";", nombresFotos));
 	     apartamentoRepo.save(a);
     }
+
+	@Override
+	public List<Apartamento> getApartamentosPropietario(String userId) {
+		 return apartamentoRepo.findByPropietarioIdUsuario(userId);
+	}
     
     
 	

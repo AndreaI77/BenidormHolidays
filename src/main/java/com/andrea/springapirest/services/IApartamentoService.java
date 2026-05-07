@@ -49,6 +49,7 @@ public interface IApartamentoService {
 			String fotosEliminadasJson,
 			MultipartFile[] files
 			) throws IOException;
+	List<Apartamento> getApartamentosPropietario(String userId);
 	 
 	 
 	 

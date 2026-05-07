@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,18 +32,19 @@ public class PrecioTemporadaController {
 	 public PrecioTemporada obtenerPorId(@PathVariable Integer id) {
 	     return service.obtenerPorId(id);
 	 }
-
+	 @PreAuthorize("hasRole('EMPLEADO')")
 	 @PostMapping
 	 public PrecioTemporada crear(@RequestBody PrecioTemporadaDTO dto) {
 	     return service.crear(dto);
 	 }
 
+	 @PreAuthorize("hasRole('EMPLEADO')")
 	 @PutMapping("/{id}")
 	 public PrecioTemporada actualizar(@PathVariable Integer id,
 	                                      @RequestBody PrecioTemporadaDTO dto) {
 	     return service.actualizar(id, dto);
 	 }
-
+	 @PreAuthorize("hasRole('EMPLEADO')")
 	@DeleteMapping("/{id}")
 	 public void eliminar(@PathVariable Integer id) {
 	     service.eliminar(id);

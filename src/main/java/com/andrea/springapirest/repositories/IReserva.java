@@ -10,6 +10,7 @@ import org.springframework.stereotype.Repository;
 
 import com.andrea.springapirest.entities.Reserva;
 import com.andrea.springapirest.models.dto.ComentarioDTO;
+import com.andrea.springapirest.models.dto.IngresoMensualDTO;
 import com.andrea.springapirest.models.dto.TipoReserva;
 
 
@@ -50,4 +51,48 @@ public interface IReserva extends JpaRepository<Reserva, Integer> {
 
    
 	boolean existsByApartamento_IdAptoAndTipo(Integer idApto, TipoReserva tipo);
+	
+	   @Query("""
+			    SELECT COUNT(r) > 0 FROM Reserva r
+			    WHERE r.apartamento.id = :apartamentoId
+			    AND (
+			        :fechaInicio < r.fechaFin AND
+			        :fechaFin > r.fechaPrincipio
+			    )
+			    """)
+	boolean hayDisponibilidad(
+			        @Param("apartamentoId") Integer apartamentoId,
+			        @Param("fechaInicio") LocalDate fechaInicio,
+			        @Param("fechaFin") LocalDate fechaFin
+			    );
+	   
+	List<Reserva> findByClienteIdUsuarioAndTipoOrderByFechaPrincipioDesc(Integer clienteId, TipoReserva tipo);
+
+	List<Reserva> findByApartamentoIdAptoOrderByFechaPrincipioDesc(Integer id);
+	
+	@Query("""
+		    SELECT r FROM Reserva r
+		    WHERE r.fechaFin >= :inicio
+		    AND r.fechaPrincipio <= :fin
+		""")
+		List<Reserva> findByRango(LocalDate inicio, LocalDate fin);
+	
+	@Query("""
+			SELECT new com.andrea.springapirest.models.dto.IngresoMensualDTO(
+			    CAST(EXTRACT(MONTH FROM r.fechaPrincipio) AS integer),
+			    COALESCE(SUM(r.precio), 0)
+			)
+			FROM Reserva r
+			WHERE EXTRACT(YEAR FROM r.fechaPrincipio) = :year
+			GROUP BY EXTRACT(MONTH FROM r.fechaPrincipio)
+			ORDER BY EXTRACT(MONTH FROM r.fechaPrincipio)
+			""")
+			List<IngresoMensualDTO> ingresosPorMes(@Param("year") int year);
+
+	@Query("""
+			SELECT r
+			FROM Reserva r
+			WHERE EXTRACT(YEAR FROM r.fechaPrincipio) = :year
+			""")
+	List<Reserva> findByYear(int year);
 }

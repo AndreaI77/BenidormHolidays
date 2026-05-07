@@ -26,4 +26,20 @@ public class EmailServiceImpl {
 
 	        mailSender.send(message);
 	    }
+	    public void sendNewUserEmail(String to, String password) {
+
+	        SimpleMailMessage message = new SimpleMailMessage();
+	        message.setTo(to);
+	        message.setSubject("Alta de usuario");
+	        message.setText(
+	        	    "Hola,\n\n" +
+	        	    "Este correo es autogenerado. No respondas al correo.\n"+
+	        	    "Ha sido dado de alta en la web de la empresa Benidorm Holidays. \n "+
+	        	    "Su contraseña de acceso es: "+ password + "\n\n" +
+	        	    "Su usuario es su correo electrónico. \nTe recomendamos cambiarla después de iniciar sesión.\n\n" +
+	        	    "Saludos.\n Atentamente, Benidorm Holidays"
+	        	);
+
+	        mailSender.send(message);
+	    }
 }

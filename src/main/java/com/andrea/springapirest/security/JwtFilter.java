@@ -57,26 +57,8 @@ public class JwtFilter extends OncePerRequestFilter {
             System.out.println("AUTH: " + auth);
         }
 
-        /*if (jwtUtil.validateToken(token)) {
-
-            String email = jwtUtil.extractUsername(token);
-            List<String> roles = jwtUtil.extractRoles(token);
-
-            List<GrantedAuthority> authorities = roles.stream()
-                    .filter(Objects::nonNull)
-                    .map(String::valueOf)
-                    .map(r -> new SimpleGrantedAuthority("ROLE_" + r))
-                    .collect(Collectors.toList());
-
-            Authentication auth =
-                    new UsernamePasswordAuthenticationToken(email, null, authorities);
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
-            System.out.println("AUTH OK: " + email);
-            System.out.println("ROLES: " + roles);
-        }*/
-        System.out.println("JWT FILTER EJECUTADO");
-        System.out.println("TOKEN: " + token);
+        //System.out.println("JWT FILTER EJECUTADO");
+        //System.out.println("TOKEN: " + token);
       
         filterChain.doFilter(request, response);
     }

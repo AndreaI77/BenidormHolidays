@@ -3,6 +3,7 @@ package com.andrea.springapirest.controllers;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
@@ -33,41 +34,36 @@ public class UsuarioController {
     @Autowired
     private IUsuarioService usuarioService;
  
+    @PreAuthorize("hasRole('EMPLEADO')")
     @GetMapping("/propietarios")
     public ResponseEntity<List<PropietarioDTO>> getPropietarios(){
 
         return ResponseEntity.ok(usuarioService.findPropietariosActivos());
     }
-    
+    @PreAuthorize("hasRole('EMPLEADO')")
     @GetMapping("/propietarios/all")
     public ResponseEntity<List<Usuario>> getAllPropietarios(){
 
         return ResponseEntity.ok(usuarioService.findAllPropietarios());
     }
-    
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/empleados/all")
     public ResponseEntity<List<Usuario>> getAllEmpleados(){
 
         return ResponseEntity.ok(usuarioService.findAllEmpleados());
     }
-
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/{id}")
     public Usuario getById(@PathVariable Integer id) {
         return usuarioService.findById(id);
     }
-   /* @PostMapping("/create")
-    public ResponseEntity<ApiResponse<Void>> crear(@RequestBody Usuario user)throws EmailExistsException {
-
-        usuarioService.saveUsuario(user);
-
-        return ResponseEntity.ok( ApiResponse.success("Usuario creado correctamente", null));
-    }*/
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/create")
     public ResponseEntity<UsuarioSaveResponse> create(@RequestBody Usuario usuario) {
         return ResponseEntity.ok(usuarioService.saveOrFind(usuario));
     }
 
-    @PostMapping("/register")
+    @PostMapping("auth/register")
     public ResponseEntity<ApiResponse<Void>> registrar(@RequestBody UsuarioRegistroDTO dto)throws EmailExistsException {
 
         usuarioService.registrar(dto);
@@ -123,15 +119,16 @@ public class UsuarioController {
             ApiResponse.success("Contraseña actualizada correctamente", null)
         );
     }
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public Usuario update(@PathVariable Integer id, @RequestBody Usuario usuario) {
         return usuarioService.updateUsuario(id, usuario);
     }
 
-    @DeleteMapping("/{id}")
+    /*@DeleteMapping("/{id}")
     public void delete(@PathVariable Integer id) {
         usuarioService.deleteUsuario(id);
-    }
+    }*/
     
     @GetMapping("/profile")
     public ResponseEntity<UsuarioProfileDTO> getProfile(Authentication authentication) {

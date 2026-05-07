@@ -38,6 +38,11 @@ public interface IApartamento extends JpaRepository<Apartamento, Integer> {
         );
 
 	List<Apartamento> findAllByOrderByEstadoAsc();
+
+	
+	int countByEstado(String estado);
+
+	List<Apartamento> findByPropietarioIdUsuario(String userId);
        
 	
 }

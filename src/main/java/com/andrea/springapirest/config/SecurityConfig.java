@@ -27,8 +27,79 @@ public class SecurityConfig {
 	        this.jwtFilter = jwtFilter;
 	    }
 
+	 @Bean
+	    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+
+	        http
+	            .cors(cors -> {})
+	            .csrf(csrf -> csrf.disable())
+	            .sessionManagement(session ->
+	                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+	            )
+
+	            .authorizeHttpRequests(auth -> auth
+
+	                // -----------------------
+	                // PÚBLICAS
+	                // -----------------------
+	                .requestMatchers(
+	                    "/api/usuarios/auth/**",
+	                    "/api/fotos/**",
+	                    "/api/apartamentos/public/**"
+	                ).permitAll()
+
+	                // -----------------------
+	                // SOLO LOGUEADOS
+	                // -----------------------
+	                .requestMatchers(
+	                    "/api/usuarios/me",
+	                    "/api/usuarios/change-password",
+	                    "/api/usuarios/profile",	                   
+	                    "/api/reservas/mis",
+	                    "/api/reservas/{id}/**"
+	                ).authenticated()
+	                // -----------------------
+	                // PROPIETARIO
+	                // -----------------------
+	                .requestMatchers(
+		                "/api/propietario/**"
+		                	
+		                ).hasRole("PROPIETARIO")
+
+	                // -----------------------
+	                // EMPLEADO + ADMIN
+	                // -----------------------
+	                .requestMatchers(
+	 	                "/api/usuarios/propietarios/**",
+	 	               "/api/apartamentos/**",
+	                    "/api/reservas/ingresos/**",
+	                    "/api/reservas/all",
+	                    "/api/reservas/ocupacion/**",
+	                    "/api/precios/**"
+	                ).hasAnyRole("EMPLEADO", "ADMIN")
+
+	                // -----------------------
+	                // SOLO ADMIN
+	                // -----------------------
+	                .requestMatchers(
+	                	"/api/usuarios/create",
+	                	"/api/usuarios/{id}",
+	                    "/api/usuarios/empleados/**"
+	                    
+	                ).hasRole("ADMIN")
+
+	                // -----------------------
+	                // TODO LO DEMÁS
+	                // -----------------------
+	                .anyRequest().authenticated()
+	            )
+
+	            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+
+	        return http.build();
+	    }
 	 
-	   @Bean
+	   /*@Bean
 	    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
 	        http
@@ -46,7 +117,7 @@ public class SecurityConfig {
 
 
 	        return http.build();
-	    }
+	    }*/
 
 	    @Bean
 	    public PasswordEncoder passwordEncoder() {

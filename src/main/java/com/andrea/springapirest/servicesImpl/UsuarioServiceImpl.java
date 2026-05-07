@@ -84,7 +84,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
         // 🔐 ENCRIPTAR PASSWORD
         usuario.setContrasena(passwordEncoder.encode(dto.getPassword()));      
-        //usuario.setCliente("S");
+        usuario.setCliente("S");
         
 
         usuario.setFechaAlta(LocalDate.now());
@@ -103,7 +103,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
         if ("S".equals(user.getPropietario())) roles.add("PROPIETARIO");
         if ("S".equals(user.getAdministrador())) roles.add("ADMIN");
-       // if ("S".equals(user.getCliente())) roles.add("CLIENTE");
+        if ("S".equals(user.getCliente())) roles.add("CLIENTE");
         if ("S".equals(user.getEmpleado())) roles.add("EMPLEADO");
 
         return jwtUtil.generateToken(user.getIdUsuario(),user.getEmail(), roles);
@@ -130,7 +130,9 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     @Override
     public Usuario saveUsuario(Usuario usuario) {
-    	 Optional<Usuario> byEmail = usuarioRepo.findByEmail(usuario.getEmail());
+    	
+    	 validarEmailYDni(usuario);
+    	/* Optional<Usuario> byEmail = usuarioRepo.findByEmail(usuario.getEmail());
     	  Optional<Usuario> byDni = usuarioRepo.findByDNI(usuario.getDNI());
 
     	    if (usuario.getIdUsuario() == null) {
@@ -151,20 +153,24 @@ public class UsuarioServiceImpl implements IUsuarioService {
     	        if (byDni.isPresent() && !byDni.get().getIdUsuario().equals(usuario.getIdUsuario())) {
     	            throw new DNIExistsException("DNI_EXISTS");
     	        }
-    	    }
-    	  
-        return usuarioRepo.save(usuario);
+    	    }*/
+    	    usuario.setFechaAlta(LocalDate.now());
+    	    
+        return  usuarioRepo.save(usuario);
     }
 
     @Override
     public Usuario updateUsuario(Integer id, Usuario updated) {
+    	 
+    	validarEmailYDni(updated);
+    	 
         return usuarioRepo.findById(id).map(u -> {
             u.setNombre(updated.getNombre());
             u.setApellidos(updated.getApellidos());
             u.setDomicilio(updated.getDomicilio());
             u.setDNI(updated.getDNI());
             u.setEmail(updated.getEmail());
-            if (updated.getContrasena() != null) u.setContrasena(updated.getContrasena());
+          
             u.setTelefono(updated.getTelefono());
             u.setFechaNac(updated.getFechaNac());
            // u.setFechaAlta(updated.getFechaAlta());
@@ -173,11 +179,27 @@ public class UsuarioServiceImpl implements IUsuarioService {
             u.setAdministrador(updated.getAdministrador());
             u.setPropietario(updated.getPropietario());
             u.setEmpleado(updated.getEmpleado());
-           // u.setCliente(updated.getCliente());
+            u.setCliente(u.getCliente());
+            
             return usuarioRepo.save(u);
         }).orElse(null);
     }
 
+    private void validarEmailYDni(Usuario usuario) {
+
+        Optional<Usuario> emailExistente = usuarioRepo.findByEmail(usuario.getEmail());
+        if (emailExistente.isPresent() &&
+            !emailExistente.get().getIdUsuario().equals(usuario.getIdUsuario())) {
+        	 throw new EmailExistsException("EMAIL_EXISTS");
+        }
+
+        Optional<Usuario> dniExistente = usuarioRepo.findByDNI(usuario.getDNI());
+        if (dniExistente.isPresent() &&
+            !dniExistente.get().getIdUsuario().equals(usuario.getIdUsuario())) {
+        	throw new DNIExistsException("DNI_EXISTS");
+        }
+    }
+    
     @Override
     public void deleteUsuario(Integer id) {
         usuarioRepo.deleteById(id);
@@ -208,9 +230,9 @@ public class UsuarioServiceImpl implements IUsuarioService {
 		     roles.add("ADMIN");
 		 }
 
-		 /*if ("S".equals(user.getCliente())) {
+		 if ("S".equals(user.getCliente())) {
 		     roles.add("CLIENTE");
-		 }*/
+		 }
 
 		 if ("S".equals(user.getPropietario())) {
 		     roles.add("PROPIETARIO");
@@ -264,7 +286,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 	    Usuario usuario = usuarioRepo.findById(userId)
 	            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-	    // 1. Actualizar campos
+	    
 	    usuario.setNombre(dto.getNombre());
 	    usuario.setApellidos(dto.getApellidos());
 	    usuario.setEmail(dto.getEmail());
@@ -276,13 +298,13 @@ public class UsuarioServiceImpl implements IUsuarioService {
 	  
 	    String basePath = uploadDir + "/usuarios/" + userId + "/";
 
-	    // 2. BORRAR FOTO
+	   
 	    if (deleteFoto && usuario.getFotoPerfil() != null) {
 	        fileStorageService.deleteFile(basePath + usuario.getFotoPerfil());
 	        usuario.setFotoPerfil(null);
 	    }
 
-	    // 3. SUBIR NUEVA FOTO
+	    
 	    if (foto != null && !foto.isEmpty()) {
 
 	        // borrar anterior si existe
@@ -317,23 +339,35 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
 	@Override
 	public UsuarioSaveResponse saveOrFind(Usuario usuario) {
-		 Optional<Usuario> existente =
-			        usuarioRepo.findByEmailOrDNI(usuario.getEmail(), usuario.getDNI());
+		 Optional<Usuario> porEmail = usuarioRepo.findByEmail(usuario.getEmail());
+		    Optional<Usuario> porDni = usuarioRepo.findByDNI(usuario.getDNI());
 
-			    // 🟡 SI EXISTE
-			    if (existente.isPresent()) {
+		    
+		    if (porEmail.isPresent() && porDni.isPresent()
+		        && !porEmail.get().getIdUsuario().equals(porDni.get().getIdUsuario())) {
 
-			        UsuarioSaveResponse response = new UsuarioSaveResponse(true, existente.get());
-			        return response;
-			    }
+		        throw new RuntimeException("EMAIL_Y_DNI_PERTENECEN_A_USUARIOS_DISTINTOS");
+		    }
 
-			    // 🟢 SI NO EXISTE → CREAR
-			    usuario.setFechaAlta(LocalDate.now());
-			    Usuario guardado = usuarioRepo.save(usuario);
+		   
+		    if (porEmail.isPresent()) {
+		        return new UsuarioSaveResponse(true, porEmail.get());
+		    }
 
-			    UsuarioSaveResponse response = new UsuarioSaveResponse(false, null);
+		    if (porDni.isPresent()) {
+		        return new UsuarioSaveResponse(true, porDni.get());
+		    }
 
+		    
+		    usuario.setFechaAlta(LocalDate.now());
+		    String newPassword = Utils.generateRandomPassword();		    
+            usuario.setContrasena(passwordEncoder.encode(newPassword));
+		    Usuario guardado = usuarioRepo.save(usuario);
+		    
 
-			    return response;
+            emailService.sendNewUserEmail(usuario.getEmail(), newPassword);
+
+		    return new UsuarioSaveResponse(false, guardado);
+		
 	}
 }

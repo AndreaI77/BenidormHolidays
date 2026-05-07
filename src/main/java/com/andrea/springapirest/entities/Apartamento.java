@@ -42,7 +42,7 @@ public class Apartamento implements Serializable{
 
     
     @OneToMany(mappedBy = "apartamento")
-    @JsonIgnoreProperties({"apartamento"})
+    @JsonIgnore
     private List<Reserva> reservas;
     
 

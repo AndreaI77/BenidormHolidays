@@ -22,6 +22,4 @@ public interface IUsuario extends JpaRepository<Usuario, Integer> {
 	Optional<Usuario> findByEmail(String email);
 	Optional<Usuario> findByDNI(String dni);
 	boolean existsByDNI(String email);
-	Optional<Usuario> findByEmailOrDNI(String email, String dni);
-
 }

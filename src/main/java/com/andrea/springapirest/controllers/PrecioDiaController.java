@@ -11,6 +11,7 @@ import com.andrea.springapirest.services.IPrecioService;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -26,7 +27,7 @@ public class PrecioDiaController {
         this.precioDiaRepository = precioDiaRepository;
 		this.precioService = precioService;
     }
-   
+    @PreAuthorize("hasRole('EMPLEADO')")
     @PostMapping
     public ResponseEntity<PrecioDia> crear(@RequestBody PrecioDiaDTO dto) {
         return ResponseEntity.ok(precioService.crear(dto));
@@ -48,7 +49,7 @@ public class PrecioDiaController {
     public List<PrecioDia> porApartamento(@PathVariable Integer idApto) {
         return precioDiaRepository.findByApartamento_IdApto(idApto);
     }
-
+    @PreAuthorize("hasRole('EMPLEADO')")
     @PutMapping("/{id}")
     public ResponseEntity<PrecioDia> actualizar(
             @PathVariable Integer id,
@@ -62,7 +63,7 @@ public class PrecioDiaController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-
+    @PreAuthorize("hasRole('EMPLEADO')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> eliminar(@PathVariable Integer id) {
         if (!precioDiaRepository.existsById(id)) {
