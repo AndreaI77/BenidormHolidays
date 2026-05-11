@@ -19,6 +19,7 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.andrea.springapirest.entities.Usuario;
 import com.andrea.springapirest.exceptions.DNIExistsException;
+import com.andrea.springapirest.exceptions.DNIYEmailExistsException;
 import com.andrea.springapirest.exceptions.EmailExistsException;
 import com.andrea.springapirest.exceptions.InvalidCredentialException;
 import com.andrea.springapirest.models.dto.ChangePasswordRequest;
@@ -70,7 +71,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
         if (usuarioRepo.existsByEmail(dto.getEmail())) {
         	 throw new EmailExistsException("EMAIL_EXISTS");
         }
-        if (usuarioRepo.existsByDNI(dto.getEmail())) {
+        if (usuarioRepo.existsByDNI(dto.getDni())) {
        	 throw new DNIExistsException("DNI_EXISTS");
        }
 
@@ -176,9 +177,14 @@ public class UsuarioServiceImpl implements IUsuarioService {
            // u.setFechaAlta(updated.getFechaAlta());
             u.setFechaBaja(updated.getFechaBaja());
             u.setObservaciones(updated.getObservaciones());
-            u.setAdministrador(updated.getAdministrador());
+           
             u.setPropietario(updated.getPropietario());
             u.setEmpleado(updated.getEmpleado());
+            if(!updated.getEmpleado().equals("S")) {
+            	u.setAdministrador("N");
+            }else {
+            	 u.setAdministrador(updated.getAdministrador());
+            }
             u.setCliente(u.getCliente());
             
             return usuarioRepo.save(u);
@@ -187,17 +193,25 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     private void validarEmailYDni(Usuario usuario) {
 
-        Optional<Usuario> emailExistente = usuarioRepo.findByEmail(usuario.getEmail());
-        if (emailExistente.isPresent() &&
-            !emailExistente.get().getIdUsuario().equals(usuario.getIdUsuario())) {
-        	 throw new EmailExistsException("EMAIL_EXISTS");
-        }
+    	 Optional<Usuario> emailExistente =usuarioRepo.findByEmail(usuario.getEmail());
 
-        Optional<Usuario> dniExistente = usuarioRepo.findByDNI(usuario.getDNI());
-        if (dniExistente.isPresent() &&
-            !dniExistente.get().getIdUsuario().equals(usuario.getIdUsuario())) {
-        	throw new DNIExistsException("DNI_EXISTS");
-        }
+    	    Optional<Usuario> dniExistente =usuarioRepo.findByDNI(usuario.getDNI());
+
+    	    if (emailExistente.isPresent() &&
+    	        !emailExistente.get()
+    	            .getIdUsuario()
+    	            .equals(usuario.getIdUsuario())) {
+
+    	        throw new EmailExistsException("EMAIL_EXISTS");
+    	    }
+
+    	    if (dniExistente.isPresent() &&
+    	        !dniExistente.get()
+    	            .getIdUsuario()
+    	            .equals(usuario.getIdUsuario())) {
+
+    	        throw new DNIExistsException("DNI_EXISTS");
+    	    }
     }
     
     @Override
@@ -276,15 +290,18 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
 	@Override
 	@Transactional
-	public UsuarioProfileDTO updateProfile(
+	public UsuarioProfileDTO updateProfile (
 	        Integer userId,
 	        UsuarioProfileDTO dto,
 	        MultipartFile foto,
 	        boolean deleteFoto
 	) {
-
+		  System.out.println(">>> ENTRANDO EN updateProfile");
 	    Usuario usuario = usuarioRepo.findById(userId)
 	            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+	    
+	  System.out.print("usuario recuperado de la bd: "+usuario.getIdUsuario());
+	  
 
 	    
 	    usuario.setNombre(dto.getNombre());
@@ -293,9 +310,13 @@ public class UsuarioServiceImpl implements IUsuarioService {
 	    usuario.setTelefono(dto.getTelefono());
 	    usuario.setDomicilio(dto.getDomicilio());
 	    usuario.setDNI(dto.getDNI());
-	    usuario.setFechaNac(dto.getFechaNac());
+	   usuario.setFechaNac(dto.getFechaNac());
 
-	  
+	    usuarioRepo.flush();
+	    System.out.println("ANTES VALIDACION: " + usuario.getEmail());
+	    validarEmailYDni(usuario); //compruebo los datos del usuario antes de guardar la foto.
+	    
+	    System.out.println("despues VALIDACION: " + usuario.getEmail());
 	    String basePath = uploadDir + "/usuarios/" + userId + "/";
 
 	   
@@ -322,7 +343,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 	    }
 
 	    usuarioRepo.save(usuario);
-
+	    
 	    return mapper.toDTO(usuario);
 	}
 
@@ -346,7 +367,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 		    if (porEmail.isPresent() && porDni.isPresent()
 		        && !porEmail.get().getIdUsuario().equals(porDni.get().getIdUsuario())) {
 
-		        throw new RuntimeException("EMAIL_Y_DNI_PERTENECEN_A_USUARIOS_DISTINTOS");
+		        throw new DNIYEmailExistsException("DNI Y EMAIL_EXISTS");
 		    }
 
 		   

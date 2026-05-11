@@ -21,7 +21,7 @@ public class UsuarioProfileDTO {
 	    @NotBlank(message = "La dirección es obligatoria")
 	    private String domicilio;
 	    
-	    @Pattern(regexp = "^[0-9+ ]{6,20}$", message = "Teléfono inválido")
+	 
 	    private String telefono;
 	    private LocalDate fechaNac;
 	    private String DNI;

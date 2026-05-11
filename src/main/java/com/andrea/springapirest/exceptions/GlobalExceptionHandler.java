@@ -23,11 +23,18 @@ public class GlobalExceptionHandler {
 	                .body(ApiResponse.error("EMAIL_EXISTS", "El email ya está registrado"));
 	    }
 	  @ExceptionHandler(DNIExistsException.class)
-	    public ResponseEntity<String> handleUsuarioExists(DNIExistsException ex) {
+	    public ResponseEntity<ApiResponse<Void>> handleUsuarioExists(DNIExistsException ex) {
 
 	        return ResponseEntity
 	                .status(HttpStatus.CONFLICT)
-	                .body(ex.getMessage());
+	                .body(ApiResponse.error("DNI_EXISTS", "El DNI ya está registrado"));
+	    }
+	  @ExceptionHandler(DNIYEmailExistsException.class)
+	    public ResponseEntity<ApiResponse<Void>> handleUsuarioExists(DNIYEmailExistsException ex) {
+
+	        return ResponseEntity
+	                .status(HttpStatus.CONFLICT)
+	                .body(ApiResponse.error("DNI_Y_EMAIL_EXISTS", "El DNI y email pertenecen a personas distintas."));
 	    }
 
 	    @ExceptionHandler(Exception.class)
@@ -67,6 +74,19 @@ public class GlobalExceptionHandler {
 
 	        return ResponseEntity.badRequest().body(errors);
 	    }
+	    
+	   /* @ExceptionHandler(MethodArgumentNotValidException.class)
+	    public ResponseEntity<Map<String, String>> handleValidationErrors(
+	            MethodArgumentNotValidException ex) {
+
+	        Map<String, String> errores = new HashMap<>();
+
+	        ex.getBindingResult().getFieldErrors().forEach(error -> {
+	            errores.put(error.getField(), error.getDefaultMessage());
+	        });
+
+	        return ResponseEntity.badRequest().body(errores);
+	    }*/
 	    
 	   /* @ExceptionHandler(Exception.class)
 	    public ResponseEntity<?> handleAll(Exception ex) {

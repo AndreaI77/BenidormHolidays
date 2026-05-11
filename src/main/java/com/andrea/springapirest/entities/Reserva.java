@@ -60,14 +60,6 @@ public class Reserva implements Serializable{
     @JoinColumn(name = "id_apto", nullable = false)
     private Apartamento apartamento;
 
-    @OneToMany(mappedBy = "reserva")
-    @JsonIgnore
-    private List<Incidencia> incidencias;
-
-    @OneToMany(mappedBy = "reserva")
-    @JsonIgnore
-    private List<Servicio> servicios;
-
 	public Integer getIdReserva() {
 		return idReserva;
 	}
@@ -140,22 +132,7 @@ public class Reserva implements Serializable{
 		this.cliente = cliente;
 	}
 
-	public List<Incidencia> getIncidencias() {
-		return incidencias;
-	}
-
-	public void setIncidencias(List<Incidencia> incidencias) {
-		this.incidencias = incidencias;
-	}
-
-	public List<Servicio> getServicios() {
-		return servicios;
-	}
-
-	public void setServicios(List<Servicio> servicios) {
-		this.servicios = servicios;
-	}
-
+	
 	public Apartamento getApartamento() {
 		return apartamento;
 	}

@@ -30,6 +30,7 @@ public class Usuario implements Serializable{
     @Column(unique = true)
     private String DNI;
 
+    @Column(unique = true)
     private String email;
    
     private String contrasena;
@@ -62,13 +63,7 @@ public class Usuario implements Serializable{
     @JsonIgnore
     private List<Reserva> reservas;
 
-    @OneToMany(mappedBy = "empleado")
-    @JsonIgnore
-    private List<Incidencia> incidencias;
-    
-    @OneToMany(mappedBy = "empleado")
-    @JsonIgnore
-    private List<Servicio> servicios;
+  
 
 	public Integer getIdUsuario() {
 		return idUsuario;
@@ -78,13 +73,6 @@ public class Usuario implements Serializable{
 		this.idUsuario = idUsuario;
 	}
 
-	public List<Servicio> getServicios() {
-		return servicios;
-	}
-
-	public void setServicios(List<Servicio> servicios) {
-		this.servicios = servicios;
-	}
 
 	public String getNombre() {
 		return nombre;
@@ -232,15 +220,6 @@ public class Usuario implements Serializable{
 		this.reservas = reservas;
 	}
 
-	public List<Incidencia> getIncidencias() {
-		return incidencias;
-	}
-
-	public void setIncidencias(List<Incidencia> incidencias) {
-		this.incidencias = incidencias;
-	}
-
-    // getters y setters
-    
+	
     
 }

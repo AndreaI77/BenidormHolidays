@@ -64,20 +64,20 @@ public class UsuarioController {
     }
 
     @PostMapping("auth/register")
-    public ResponseEntity<ApiResponse<Void>> registrar(@RequestBody UsuarioRegistroDTO dto)throws EmailExistsException {
+    public ResponseEntity<ApiResponse<Void>> registrar( @Valid @RequestBody UsuarioRegistroDTO dto)throws EmailExistsException {
 
         usuarioService.registrar(dto);
 
         return ResponseEntity.ok( ApiResponse.success("Usuario registrado correctamente", null));
     }
     @PostMapping("auth/login")
-    public ResponseEntity<ApiResponse<?>> login(@RequestBody LoginRequest dto) throws InvalidCredentialException{
+    public ResponseEntity<ApiResponse<?>> login( @Valid @RequestBody LoginRequest dto) throws InvalidCredentialException{
 
         String token = usuarioService.login(dto);
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
 
-        System.out.println(auth);
-        System.out.println(auth.getAuthorities());
+       // System.out.println(auth);
+       // System.out.println(auth.getAuthorities());
 
         return ResponseEntity.ok(
             ApiResponse.success("Login correcto", token)
@@ -109,7 +109,7 @@ public class UsuarioController {
     @PutMapping("/change-password")
     public ResponseEntity<ApiResponse<?>> changePassword(
             Authentication authentication,
-            @RequestBody ChangePasswordRequest request) {
+          @Valid  @RequestBody ChangePasswordRequest request) {
 
         Integer userId = Integer.parseInt(authentication.getName());
 
@@ -148,6 +148,7 @@ public class UsuarioController {
 
             @RequestParam(defaultValue = "false") boolean deleteFoto
     ) {
+    	
 
         Integer userId = Integer.parseInt(authentication.getName());
 

@@ -2,20 +2,16 @@ package com.andrea.springapirest.servicesImpl;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.andrea.springapirest.entities.Apartamento;
-import com.andrea.springapirest.entities.Precio;
 import com.andrea.springapirest.entities.PrecioDia;
 import com.andrea.springapirest.models.dto.PrecioDiaDTO;
-import com.andrea.springapirest.repositories.IPrecio;
 import com.andrea.springapirest.repositories.IPrecioDiaRepository;
 import com.andrea.springapirest.repositories.IPrecioTemporadaRepository;
-import com.andrea.springapirest.repositories.IReserva;
 import com.andrea.springapirest.services.IPrecioService;
 
 @Service
