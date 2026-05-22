@@ -28,7 +28,7 @@ public class Apartamento implements Serializable{
     private Double coordenaday;
     private Integer dormitorios;
 
-    @Column(name = "baños")
+   
     private Integer banos;
     private String titulo;
     private String fotos;

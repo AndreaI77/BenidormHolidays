@@ -23,16 +23,21 @@ public class Usuario implements Serializable{
     @Column(name = "id_usuario")
     private Integer idUsuario;
 
+	@Column(nullable = false, length = 50)
     private String nombre;
+	
+	@Column(nullable = false, length = 50)
     private String apellidos;
+	
     private String domicilio;
 
-    @Column(unique = true)
+    @Column(unique = true, length = 20)
     private String DNI;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false, length = 150)
     private String email;
    
+    @Column(length = 100)
     private String contrasena;
     private String telefono;
 
@@ -50,9 +55,14 @@ public class Usuario implements Serializable{
     @Column(name = "foto_perfil")
     private String fotoPerfil;
 
+    @Column(length = 1)
     private String administrador;
+    
+    @Column(length = 1)
     private String propietario;
+    @Column(length = 1)
     private String empleado;
+    @Column(length = 1)
     private String cliente;
 
     @OneToMany(mappedBy = "propietario")

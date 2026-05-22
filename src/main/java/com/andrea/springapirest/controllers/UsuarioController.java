@@ -52,12 +52,12 @@ public class UsuarioController {
 
         return ResponseEntity.ok(usuarioService.findAllEmpleados());
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('EMPLEADO')")
     @GetMapping("/{id}")
     public Usuario getById(@PathVariable Integer id) {
         return usuarioService.findById(id);
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('EMPLEADO')")
     @PostMapping("/create")
     public ResponseEntity<UsuarioSaveResponse> create(@RequestBody Usuario usuario) {
         return ResponseEntity.ok(usuarioService.saveOrFind(usuario));
@@ -119,7 +119,7 @@ public class UsuarioController {
             ApiResponse.success("Contraseña actualizada correctamente", null)
         );
     }
-    @PreAuthorize("hasRole('ADMIN')")
+    
     @PutMapping("/{id}")
     public Usuario update(@PathVariable Integer id, @RequestBody Usuario usuario) {
         return usuarioService.updateUsuario(id, usuario);

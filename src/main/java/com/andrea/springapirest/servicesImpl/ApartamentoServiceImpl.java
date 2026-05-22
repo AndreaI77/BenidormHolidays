@@ -11,17 +11,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.FileSystemUtils;
 import org.springframework.web.multipart.MultipartFile;
-
 import com.andrea.springapirest.entities.Apartamento;
-import com.andrea.springapirest.entities.Precio;
 import com.andrea.springapirest.entities.Usuario;
 import com.andrea.springapirest.models.dto.ApartamentoDTO;
 import com.andrea.springapirest.models.dto.ApartamentoDetailDTO;
@@ -69,6 +65,7 @@ public class ApartamentoServiceImpl implements IApartamentoService {
     public Apartamento findById(Integer id) {
         return apartamentoRepo.findById(id)
                 .orElseThrow(() -> new RuntimeException("Apartamento no encontrado"));
+                //.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
     }
 
     @Override
@@ -140,59 +137,7 @@ public class ApartamentoServiceImpl implements IApartamentoService {
     
     
     
-    
-    //solución antes de las 2 tablas de precios
-  /*  public List<ApartamentoDTO> buscarDisponibles(
-            LocalDate fechaInicio,
-            LocalDate fechaFin,
-            int capacidad
-    ) {
-        List<Apartamento> apartamentos =
-        		apartamentoRepo.buscarDisponibles(fechaInicio, fechaFin, capacidad);
-
-        return apartamentos.stream()
-            .map(a -> new ApartamentoDTO(
-                a,
-                calcularPrecioEstancia(a, fechaInicio, fechaFin, capacidad)
-            ))
-            .toList();
-    }
-    private Double calcularPrecioEstancia(
-            Apartamento apartamento,
-            LocalDate fechaInicio,
-            LocalDate fechaFin,
-            int capacidad
-    ) {
-        double total = 0;
-
-        for (LocalDate dia = fechaInicio;
-             dia.isBefore(fechaFin);
-             dia = dia.plusDays(1)) {
-        	
-        	 final LocalDate diaActual = dia;
-            Precio precioDia = apartamento.getPrecios().stream()
-                .filter(p ->
-                    !diaActual.isBefore(p.getFechaPrincipio()) &&
-                    diaActual.isBefore(p.getFechaFin())
-                )
-                .findFirst()
-                .orElse(null);
-
-            if (precioDia == null) {
-                return null; // falta precio para algún día - no es correcto el precio final
-            }
-            
-            double precioBase = precioDia.getPrecioNoche();
-
-            // cálculo por personas extra
-            int personasExtra = Math.max(0, capacidad - 2);
-            double suplemento = personasExtra * (precioBase / 2);
-
-            total += precioBase + suplemento;
-            
-        }
-        return total;
-    }*/
+ 
     @Override
     @Transactional(readOnly = true)
     public ApartamentoDetailDTO getDetail(Integer id) {

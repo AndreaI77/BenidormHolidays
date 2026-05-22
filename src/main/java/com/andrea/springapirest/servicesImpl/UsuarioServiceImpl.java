@@ -3,11 +3,9 @@ package com.andrea.springapirest.servicesImpl;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -68,10 +66,10 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
    public void registrar(UsuarioRegistroDTO dto) {
 
-        if (usuarioRepo.existsByEmail(dto.getEmail())) {
+        if (usuarioRepo.existsByEmail(dto.getEmail().trim())) {
         	 throw new EmailExistsException("EMAIL_EXISTS");
         }
-        if (usuarioRepo.existsByDNI(dto.getDni())) {
+        if (dto.getDni() != null && !dto.getDni().isBlank() && usuarioRepo.existsByDNI(dto.getDni().trim())) {
        	 throw new DNIExistsException("DNI_EXISTS");
        }
 
@@ -79,8 +77,12 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
         usuario.setNombre(dto.getNombre());
         usuario.setApellidos(dto.getApellidos());
-        usuario.setEmail(dto.getEmail());
-        usuario.setDNI(dto.getDni());
+        usuario.setEmail(dto.getEmail().trim());
+        if(dto.getDni()!= null && !dto.getDni().isBlank()) {
+	    	usuario.setDNI(dto.getDni().trim());
+	    }else {
+	    	usuario.setDNI(dto.getDni());
+	    }
         usuario.setDomicilio(dto.getDomicilio());
 
         // 🔐 ENCRIPTAR PASSWORD
@@ -94,25 +96,25 @@ public class UsuarioServiceImpl implements IUsuarioService {
     
     public String login(LoginRequest dto) {
 
-        Usuario user = usuarioRepo.findByEmail(dto.getEmail())
+        Usuario user = usuarioRepo.findByEmail(dto.getEmail().trim())
                 .orElseThrow(() -> new InvalidCredentialException("INVALID_CREDENTIALS"));
 
         if (!passwordEncoder.matches(dto.getPassword(), user.getContrasena())) {
             throw new InvalidCredentialException("INVALID_CREDENTIALS");
         }
-        List<String> roles = new ArrayList<>();
+        List<String> roles = new ArrayList<String>();
 
-        if ("S".equals(user.getPropietario())) roles.add("PROPIETARIO");
-        if ("S".equals(user.getAdministrador())) roles.add("ADMIN");
-        if ("S".equals(user.getCliente())) roles.add("CLIENTE");
-        if ("S".equals(user.getEmpleado())) roles.add("EMPLEADO");
-
+        if ( user.getPropietario()!= null && user.getPropietario().equals("s")) roles.add("PROPIETARIO");
+        if (user.getAdministrador() != null && user.getAdministrador().equals("S")) roles.add("ADMIN");
+        if (user.getCliente() != null && user.getCliente().equals("S")) roles.add("CLIENTE");
+        if (user.getEmpleado()!= null && user.getEmpleado().equals("S")) roles.add("EMPLEADO");
+        	System.out.print("Login: " + roles);
         return jwtUtil.generateToken(user.getIdUsuario(),user.getEmail(), roles);
     }
     
     public void resetPassword(String email) {
 
-       Usuario user = usuarioRepo.findByEmail(email)
+       Usuario user = usuarioRepo.findByEmail(email.trim())
                 .orElseThrow(() -> new IllegalArgumentException("EMAIL_NOT_FOUND"));
 
         String newPassword = Utils.generateRandomPassword();
@@ -132,8 +134,8 @@ public class UsuarioServiceImpl implements IUsuarioService {
     @Override
     public Usuario saveUsuario(Usuario usuario) {
     	
-    	 validarEmailYDni(usuario);
-    	/* Optional<Usuario> byEmail = usuarioRepo.findByEmail(usuario.getEmail());
+    	// validarEmailYDni(usuario);
+    	 Optional<Usuario> byEmail = usuarioRepo.findByEmail(usuario.getEmail().trim());
     	  Optional<Usuario> byDni = usuarioRepo.findByDNI(usuario.getDNI());
 
     	    if (usuario.getIdUsuario() == null) {
@@ -154,7 +156,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
     	        if (byDni.isPresent() && !byDni.get().getIdUsuario().equals(usuario.getIdUsuario())) {
     	            throw new DNIExistsException("DNI_EXISTS");
     	        }
-    	    }*/
+    	    }
     	    usuario.setFechaAlta(LocalDate.now());
     	    
         return  usuarioRepo.save(usuario);
@@ -162,15 +164,27 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     @Override
     public Usuario updateUsuario(Integer id, Usuario updated) {
+    	Optional<Usuario> byEmail = usuarioRepo.findByEmail(updated.getEmail().trim());
+  	  	Optional<Usuario> byDni = usuarioRepo.findByDNI(updated.getDNI());
     	 
-    	validarEmailYDni(updated);
+  	  if (byEmail.isPresent() && !byEmail.get().getIdUsuario().equals(id)) {
+          throw new EmailExistsException("EMAIL_EXISTS");
+      }
+
+      if (byDni.isPresent() && !byDni.get().getIdUsuario().equals(id)) {
+          throw new DNIExistsException("DNI_EXISTS");
+      }
     	 
         return usuarioRepo.findById(id).map(u -> {
             u.setNombre(updated.getNombre());
             u.setApellidos(updated.getApellidos());
             u.setDomicilio(updated.getDomicilio());
-            u.setDNI(updated.getDNI());
-            u.setEmail(updated.getEmail());
+            if(updated.getDNI()!= null && !updated.getDNI().isBlank()) {
+    	    	u.setDNI(updated.getDNI().trim());
+    	    }else {
+    	    	u.setDNI(updated.getDNI());
+    	    }
+            u.setEmail(updated.getEmail().trim());
           
             u.setTelefono(updated.getTelefono());
             u.setFechaNac(updated.getFechaNac());
@@ -193,22 +207,18 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
     private void validarEmailYDni(Usuario usuario) {
 
-    	 Optional<Usuario> emailExistente =usuarioRepo.findByEmail(usuario.getEmail());
+    	 Optional<Usuario> emailExistente =usuarioRepo.findByEmail(usuario.getEmail().trim());
 
     	    Optional<Usuario> dniExistente =usuarioRepo.findByDNI(usuario.getDNI());
 
     	    if (emailExistente.isPresent() &&
-    	        !emailExistente.get()
-    	            .getIdUsuario()
-    	            .equals(usuario.getIdUsuario())) {
+    	        !emailExistente.get().getIdUsuario().equals(usuario.getIdUsuario())) {
 
     	        throw new EmailExistsException("EMAIL_EXISTS");
     	    }
 
     	    if (dniExistente.isPresent() &&
-    	        !dniExistente.get()
-    	            .getIdUsuario()
-    	            .equals(usuario.getIdUsuario())) {
+    	        !dniExistente.get().getIdUsuario().equals(usuario.getIdUsuario())) {
 
     	        throw new DNIExistsException("DNI_EXISTS");
     	    }
@@ -234,28 +244,28 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
 	@Override
 	public UsuarioDTO getMe(Integer userId) {
-		System.out.print("entrada getMe");
+		
 		 Usuario user = usuarioRepo.findById(userId)
 		            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
-		 List<String> roles = new ArrayList<>();
+		 List<String> roles = new ArrayList<String>();
 
-		 if ("S".equals(user.getAdministrador())) {
+		 if (user.getAdministrador()!= null && "S".equals(user.getAdministrador())) {
 		     roles.add("ADMIN");
 		 }
 
-		 if ("S".equals(user.getCliente())) {
+		 if (user.getCliente() != null && "S".equals(user.getCliente())) {
 		     roles.add("CLIENTE");
 		 }
 
-		 if ("S".equals(user.getPropietario())) {
+		 if (user.getPropietario()!= null && "S".equals(user.getPropietario())) {
 		     roles.add("PROPIETARIO");
 		 }
 
-		 if ("S".equals(user.getEmpleado())) {
+		 if ( user.getEmpleado()!= null && "S".equals(user.getEmpleado())) {
 		     roles.add("EMPLEADO");
 	                                                                      	 }
-	
+		 	System.out.print("Get me: " + roles);
 		    return new UsuarioDTO(
 		            user.getIdUsuario(),
 		            user.getEmail(),
@@ -306,10 +316,14 @@ public class UsuarioServiceImpl implements IUsuarioService {
 	    
 	    usuario.setNombre(dto.getNombre());
 	    usuario.setApellidos(dto.getApellidos());
-	    usuario.setEmail(dto.getEmail());
+	    usuario.setEmail(dto.getEmail().trim());
 	    usuario.setTelefono(dto.getTelefono());
 	    usuario.setDomicilio(dto.getDomicilio());
-	    usuario.setDNI(dto.getDNI());
+	    if(dto.getDNI()!= null && !dto.getDNI().isBlank()) {
+	    	usuario.setDNI(dto.getDNI().trim());
+	    }else {
+	    	usuario.setDNI(dto.getDNI());
+	    }
 	   usuario.setFechaNac(dto.getFechaNac());
 
 	    usuarioRepo.flush();
@@ -360,7 +374,7 @@ public class UsuarioServiceImpl implements IUsuarioService {
 
 	@Override
 	public UsuarioSaveResponse saveOrFind(Usuario usuario) {
-		 Optional<Usuario> porEmail = usuarioRepo.findByEmail(usuario.getEmail());
+		 Optional<Usuario> porEmail = usuarioRepo.findByEmail(usuario.getEmail().trim());
 		    Optional<Usuario> porDni = usuarioRepo.findByDNI(usuario.getDNI());
 
 		    

@@ -71,6 +71,7 @@ public class SecurityConfig {
 	                // -----------------------
 	                .requestMatchers(
 	 	                "/api/usuarios/propietarios/**",
+	 	               "/api/usuarios/{id}",
 	 	               "/api/apartamentos/**",
 	                    "/api/reservas/ingresos/**",
 	                    "/api/reservas/all",
@@ -82,8 +83,7 @@ public class SecurityConfig {
 	                // SOLO ADMIN
 	                // -----------------------
 	                .requestMatchers(
-	                	"/api/usuarios/create",
-	                	"/api/usuarios/{id}",
+	                	"/api/usuarios/create",   	
 	                    "/api/usuarios/empleados/**"
 	                    
 	                ).hasRole("ADMIN")
